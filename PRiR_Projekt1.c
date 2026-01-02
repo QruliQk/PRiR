@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
@@ -168,21 +165,10 @@ double frobenius_norm(double *A, double *L, double *U, int n)
 /* Pomiar czasu */
 double get_time(void)
 {
-#ifdef _WIN32
-    /* High-resolution timer for Windows */
-    static double inv_freq = 0.0;
-    LARGE_INTEGER freq, counter;
-    if (inv_freq == 0.0) {
-        QueryPerformanceFrequency(&freq);
-        inv_freq = 1.0 / (double)freq.QuadPart;
-    }
-    QueryPerformanceCounter(&counter);
-    return counter.QuadPart * inv_freq;
-#else
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(1, &ts);
     return ts.tv_sec + ts.tv_nsec * 1e-9;
-#endif
+
 }
 
 /* Wypisywanie macierzy (debug) */
