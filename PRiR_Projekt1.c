@@ -16,9 +16,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <omp.h>
 #include "header_files/concurrent_threads.h"
-
 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
