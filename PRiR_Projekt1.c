@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <omp.h>
 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
@@ -166,8 +167,9 @@ double frobenius_norm(double *A, double *L, double *U, int n)
 double get_time(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(1, &ts);
     return ts.tv_sec + ts.tv_nsec * 1e-9;
+
 }
 
 /* Wypisywanie macierzy (debug) */
@@ -207,8 +209,34 @@ void sekwencyjna(double *A, double *L, double *U, int n)
 
 /* ======== TU WRZUCACIE SWOJĄ CZĘŚĆ PROJEKTU ======== */
 
-void watki_wspolbiezne(double *A, double *L, double *U, int n)
-{
+void watki_wspolbiezne(double *A, double *L, double *U, int n) {
+
+    int i, j, k, m;
+
+    for (k = 0; k < n; k++) {
+
+        #pragma omp parallel for private(m)
+        for (j = k; j < n; j++) {
+            double sum = 0.0;
+            for (m = 0; m < k; m++) {
+                sum += L[k*n + m] * U[m*n + j];
+            }
+            U[k*n + j] = A[k*n + j] - sum;
+        }
+
+        #pragma omp barrier
+
+        #pragma omp parallel for private(m)
+        for (i = k + 1; i < n; i++) {
+            double sum = 0.0;
+            for (m = 0; m < k; m++) {
+                sum += L[i*n + m] * U[m*n + k];
+            }
+            L[i*n + k] = (A[i*n + k] - sum) / U[k*n + k];
+        }
+
+        #pragma omp barrier
+    }
 }
 
 void procesy_wspolbiezne(double *A, double *L, double *U, int n)
