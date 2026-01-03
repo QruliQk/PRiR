@@ -19,6 +19,7 @@
 #include <omp.h>
 #include "header_files/concurrent_threads.h"
 
+
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
 /* WERSJA SEKWENCYJNA */
