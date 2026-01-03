@@ -97,7 +97,7 @@ int main(void)
         printf("||A - L*U||_F = %e\n", frobenius_norm(A, L, U, n));
 
         /* Maksymalny rozmiar macierzy to 8, konsola sobie nie radzi z wiekszymi */
-        if (n <= 100) {
+        if (n <= 8) {
             print_matrix("A", A, n);
             print_matrix("L", L, n);
             print_matrix("U", U, n);
