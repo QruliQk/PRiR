@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "header_files/concurrent_threads.h"
 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
@@ -24,7 +27,7 @@
 void sekwencyjna(double *A, double *L, double *U, int n);
 
 /* WERSJE RÓWNOLEGŁE */
-void procesy_wspolbiezne(double *A, double *L, double *U, int n);
+void procesy_wspolbiezne();
 void komunikaty(double *A, double *L, double *U, int n);
 void GPGPU(double *A, double *L, double *U, int n);
 
@@ -59,6 +62,9 @@ int main(void)
         if (tryb == 0) {
             printf("Koniec programu.\n");
             break;
+        } else if(tryb == 3){
+            procesy_wspolbiezne();
+            continue;
         }
 
         printf("Podaj rozmiar macierzy n: ");
@@ -81,7 +87,6 @@ int main(void)
         switch (tryb) {
             case 1: sekwencyjna(A, L, U, n); break;
             case 2: watki_wspolbiezne(A, L, U, n); break;
-            case 3: procesy_wspolbiezne(A, L, U, n); break;
             case 4: komunikaty(A, L, U, n); break;
             case 5: GPGPU(A, L, U, n); break;
             default:
@@ -208,8 +213,22 @@ void sekwencyjna(double *A, double *L, double *U, int n)
 
 /* ======== TU WRZUCACIE SWOJĄ CZĘŚĆ PROJEKTU ======== */
 
-void procesy_wspolbiezne(double *A, double *L, double *U, int n)
+void procesy_wspolbiezne()
 {
+    pid_t pid = fork();
+ 
+    if (pid < 0) {
+        perror("fork");
+        return;
+    }
+ 
+    if (pid == 0) {
+        execl("./lu_proc", "./lu_proc", (char *)NULL);
+        perror("execl");
+        _exit(1);
+    }
+ 
+    waitpid(pid, NULL, 0);
 }
 
 void komunikaty(double *A, double *L, double *U, int n)
