@@ -352,20 +352,6 @@ static unsigned long long read_ull_prompt(const char *prompt) {
     }
 }
 
-static void ask_return_to_main(void) {
-    char line[16];
-    printf("\nCzy chcesz wrócić do pliku głównego (./main)? [t/n]: ");
-    fflush(stdout);
-
-    if (!fgets(line, sizeof(line), stdin)) return;
-
-    if (line[0] == 't' || line[0] == 'T') {
-        printf("[INFO] Uruchamiam ./main\n\n");
-        execl("./main", "./main", (char *)NULL);
-        perror("execl ./main");
-    }
-}
-
 static void print_matrix(const char *name, size_t n, const double *M) {
     printf("\n%s =\n", name);
     for (size_t i = 0; i < n; i++) {
@@ -379,7 +365,6 @@ static void print_matrix(const char *name, size_t n, const double *M) {
 /* ------------------------------ Main ------------------------------ */
 
 int main(int argc, char **argv) {
-    int64_t t_program_start = now_ns();
 
     size_t n = 0;
     int p = 0;
@@ -409,13 +394,10 @@ int main(int argc, char **argv) {
         if (errno || !end || *end || rep_long <= 0) die_msg("Błędne repeats");
         repeats = (int)rep_long;
     } else {
-        printf("PRiR Zadanie 11, LU Doolittle, procesy współbieżne\n");
-        printf("Tryb interaktywny\n\n");
-
-        long n_long = read_long_prompt("n (rozmiar macierzy, >=1): ", 1);
-        long p_long = read_long_prompt("p (liczba procesów, >=1): ", 1);
-        unsigned long long seed_ull = read_ull_prompt("seed (0..): ");
-        long rep_long = read_long_prompt("repeats (liczba powtórzeń, >=1): ", 1);
+        long n_long = read_long_prompt("Podaj rozmiar macierzy n: ", 1);
+        long p_long = read_long_prompt("Podaj liczbę procesów p (>=1): ", 1);
+        unsigned long long seed_ull = read_ull_prompt("Podaj seed (0..): ");
+        long rep_long = read_long_prompt("Podaj liczbę powtórzeń (>=1): ", 1);
 
         n = (size_t)n_long;
         p = (int)p_long;
@@ -518,8 +500,6 @@ int main(int argc, char **argv) {
             sem_destroy_safe(&c->b1_mutex);
             shm_cleanup(&shm);
 
-            ask_return_to_main();
-
             return EXIT_FAILURE;
         }
 
@@ -553,15 +533,9 @@ int main(int argc, char **argv) {
 
     t_proc_s_avg /= (double)repeats;
 
-    printf("\n=== PODSUMOWANIE ===\n");
-    printf("n=%zu p=%d repeats=%d seed=%llu\n", n, p, repeats, (unsigned long long)seed);
-    printf("T_proc(n,p)=%.6f s (avg)\n", t_proc_s_avg);
-    printf("||L*U-A||_F proc=%.6e\n", err_proc_last);
-
-    int64_t t_program_end = now_ns();
-    print_time_s("Calkowity czas dzialania programu", elapsed_s(t_program_start, t_program_end));
-
-    ask_return_to_main();
+    printf("\n");
+    printf("Czas wykonania (średni): %.6f s\n", t_proc_s_avg);
+    printf("||A - L*U||_F = %.6e\n", err_proc_last);
 
     return EXIT_SUCCESS;
 }
