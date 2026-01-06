@@ -28,8 +28,6 @@ void sekwencyjna(double *A, double *L, double *U, int n);
 
 /* WERSJE RÓWNOLEGŁE */
 void procesy_wspolbiezne();
-void komunikaty(double *A, double *L, double *U, int n);
-void GPGPU(double *A, double *L, double *U, int n);
 
 /* FUNKCJE POMOCNICZE */
 double *allocate_matrix(int n);
@@ -53,8 +51,6 @@ int main(void)
         printf("1 - Sekwencyjna\n");
         printf("2 - Watki wspolbiezne\n");
         printf("3 - Procesy wspolbiezne\n");
-        printf("4 - Komunikaty (MPI)\n");
-        printf("5 - GPGPU\n");
         printf("=====================================\n");
         printf("Twoj wybor: ");
         scanf("%d", &tryb);
@@ -87,8 +83,6 @@ int main(void)
         switch (tryb) {
             case 1: sekwencyjna(A, L, U, n); break;
             case 2: watki_wspolbiezne(A, L, U, n); break;
-            case 4: komunikaty(A, L, U, n); break;
-            case 5: GPGPU(A, L, U, n); break;
             default:
                 printf("Nieznany tryb\n");
                 free(A); free(L); free(U);
@@ -229,12 +223,4 @@ void procesy_wspolbiezne()
     }
  
     waitpid(pid, NULL, 0);
-}
-
-void komunikaty(double *A, double *L, double *U, int n)
-{
-}
-
-void GPGPU(double *A, double *L, double *U, int n)
-{
 }
