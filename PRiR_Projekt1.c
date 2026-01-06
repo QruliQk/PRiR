@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include "header_files/concurrent_threads.h"
 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
@@ -210,6 +212,20 @@ void sekwencyjna(double *A, double *L, double *U, int n)
 
 void procesy_wspolbiezne(double *A, double *L, double *U, int n)
 {
+    pid_t pid = fork();
+ 
+    if (pid < 0) {
+        perror("fork");
+        return;
+    }
+ 
+    if (pid == 0) {
+        execl("./lu_proc", "./lu_proc", (char *)NULL);
+        perror("execl");
+        _exit(1);
+    }
+ 
+    waitpid(pid, NULL, 0);
 }
 
 void komunikaty(double *A, double *L, double *U, int n)
