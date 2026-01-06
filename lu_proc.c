@@ -15,10 +15,10 @@ Kompilacja (Linux):
   gcc -std=c11 -O2 -Wall -Wextra -pedantic -pthread lu_proc.c -lm -o lu_proc
 
 Uruchomienie (interaktywnie):
-  ./prir_lu_proc
+  ./lu_proc
 
 Uruchomienie (opcjonalnie z parametrami):
-  ./prir_lu_proc n p seed repeats
+  ./lu_proc n p seed repeats
 */
 
 #define _POSIX_C_SOURCE 200809L
