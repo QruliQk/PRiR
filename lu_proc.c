@@ -12,7 +12,7 @@ Założenia:
 - Doolittle bez pivotowania: generujemy A jako diagonally dominant, żeby pivoty były stabilne.
 
 Kompilacja (Linux):
-  gcc -std=c11 -O2 -Wall -Wextra -pedantic -pthread prir_lu_proc_only.c -lm -o prir_lu_proc
+  gcc -std=c11 -O2 -Wall -Wextra -pedantic -pthread lu_proc.c -lm -o lu_proc
 
 Uruchomienie (interaktywnie):
   ./prir_lu_proc
