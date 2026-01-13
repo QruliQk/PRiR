@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "header_files/concurrent_threads.h"
-
+#include "header_files/gpgpu.h" 
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
 /* WERSJA SEKWENCYJNA */
@@ -51,6 +51,7 @@ int main(void)
         printf("1 - Sekwencyjna\n");
         printf("2 - Watki wspolbiezne\n");
         printf("3 - Procesy wspolbiezne\n");
+        printf("4 - GPGPU (CUDA)\n");
         printf("=====================================\n");
         printf("Twoj wybor: ");
         scanf("%d", &tryb);
@@ -83,6 +84,7 @@ int main(void)
         switch (tryb) {
             case 1: sekwencyjna(A, L, U, n); break;
             case 2: watki_wspolbiezne(A, L, U, n); break;
+            case 4: GPGPU(A, L, U, n); break;
             default:
                 printf("Nieznany tryb\n");
                 free(A); free(L); free(U);
