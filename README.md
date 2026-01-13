@@ -1,8 +1,8 @@
 # PRiR Project
 ## Compile a program:
-...
+```
 nvcc -O2 -c gpgpu.cu -o gpgpu.o
-...
+```
 ```
 gcc -fopenmp PRiR_Projekt1.c concurrent_threads.c gpgpu.o -lm -o PRiR_Projekt1
 ```
