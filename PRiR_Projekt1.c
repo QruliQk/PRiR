@@ -21,6 +21,8 @@
 #include <sys/wait.h>
 #include "header_files/concurrent_threads.h"
 #include "header_files/gpgpu.h" 
+#include <errno.h>
+#include <string.h>
 /* ======================= PROTOTYPY FUNKCJI ======================= */
 
 /* WERSJA SEKWENCYJNA */
@@ -28,6 +30,7 @@ void sekwencyjna(double *A, double *L, double *U, int n);
 
 /* WERSJE RÓWNOLEGŁE */
 void procesy_wspolbiezne();
+void komunikaty(double *A, double *L, double *U, int n);
 
 /* FUNKCJE POMOCNICZE */
 double *allocate_matrix(int n);
@@ -52,6 +55,7 @@ int main(void)
         printf("2 - Watki wspolbiezne\n");
         printf("3 - Procesy wspolbiezne\n");
         printf("4 - GPGPU (CUDA)\n");
+        printf("5 - Komunikaty\n");
         printf("=====================================\n");
         printf("Twoj wybor: ");
         scanf("%d", &tryb);
@@ -85,6 +89,7 @@ int main(void)
             case 1: sekwencyjna(A, L, U, n); break;
             case 2: watki_wspolbiezne(A, L, U, n); break;
             case 4: GPGPU(A, L, U, n); break;
+            case 5: komunikaty(A, L, U, n); break;
             default:
                 printf("Nieznany tryb\n");
                 free(A); free(L); free(U);
