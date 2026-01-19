@@ -2,22 +2,32 @@
  * Programowanie Równoległe i Rozproszone
  * Projekt PRiR – Zadanie 11
  * Faktoryzacja LU (Doolittle) – GPGPU (CUDA)
- *
  * Autor: Mateusz Król
  */
 
 #include <cuda_runtime.h>
 #include <cstdio>
 
- /* =========================================================
-    KERNEL: wiersz U[k][j]
-    ========================================================= */
+/* Sprawdzania błędów CUDA */
+#define CUDA_CHECK(call)                                     \
+    do {                                                     \
+        cudaError_t err = call;                              \
+        if (err != cudaSuccess) {                            \
+            fprintf(stderr,                                  \
+                "CUDA error %s:%d: %s\n",                    \
+                __FILE__, __LINE__,                          \
+                cudaGetErrorString(err));                    \
+            return;                                          \
+        }                                                    \
+    } while (0)
+
+/* KERNEL: wiersz U[k][j] */
 __global__
 void kernel_U_row(const double* A,
-    const double* L,
-    double* U,
-    int n,
-    int k)
+                  const double* L,
+                  double* U,
+                  int n,
+                  int k)
 {
     int j = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -30,15 +40,13 @@ void kernel_U_row(const double* A,
     }
 }
 
-/* =========================================================
-   KERNEL: kolumna L[i][k]
-   ========================================================= */
+/* KERNEL: kolumna L[i][k] */
 __global__
 void kernel_L_col(const double* A,
-    double* L,
-    const double* U,
-    int n,
-    int k)
+                  double* L,
+                  const double* U,
+                  int n,
+                  int k)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -51,12 +59,19 @@ void kernel_L_col(const double* A,
     }
 }
 
-/* =========================================================
-   FUNKCJA WYWOŁYWANA Z main.c
-   ========================================================= */
+/* Funkcja wywoływana z PRiR_Projekt1.c */
 extern "C"
 void GPGPU(double* A, double* L, double* U, int n)
 {
+    /* Sprawdzenie, czy dostępne jest urządzenie CUDA */
+    int deviceCount = 0;
+    CUDA_CHECK(cudaGetDeviceCount(&deviceCount));
+
+    if (deviceCount == 0) {
+        fprintf(stderr, "[GPGPU] Brak urzadzen CUDA. Tryb GPGPU niedostepny.\n");
+        return;
+    }
+
     size_t bytes = n * n * sizeof(double);
 
     double* d_A = nullptr;
@@ -64,34 +79,36 @@ void GPGPU(double* A, double* L, double* U, int n)
     double* d_U = nullptr;
 
     /* Alokacja GPU */
-    cudaMalloc((void**)&d_A, bytes);
-    cudaMalloc((void**)&d_L, bytes);
-    cudaMalloc((void**)&d_U, bytes);
+    CUDA_CHECK(cudaMalloc((void**)&d_A, bytes));
+    CUDA_CHECK(cudaMalloc((void**)&d_L, bytes));
+    CUDA_CHECK(cudaMalloc((void**)&d_U, bytes));
 
     /* Kopiowanie CPU -> GPU */
-    cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_L, L, bytes, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_U, U, bytes, cudaMemcpyHostToDevice);
+    CUDA_CHECK(cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_L, L, bytes, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_U, U, bytes, cudaMemcpyHostToDevice));
 
     int threads = 256;
     int blocks = (n + threads - 1) / threads;
 
-    /* ===== PEŁNA FAKTORYZACJA LU ===== */
+    /* Pełna faktoryzacja LU */
     for (int k = 0; k < n; k++) {
 
-        kernel_U_row << <blocks, threads >> > (d_A, d_L, d_U, n, k);
-        cudaDeviceSynchronize();
+        kernel_U_row<<<blocks, threads>>>(d_A, d_L, d_U, n, k);
+        CUDA_CHECK(cudaGetLastError());
+        CUDA_CHECK(cudaDeviceSynchronize());
 
-        kernel_L_col << <blocks, threads >> > (d_A, d_L, d_U, n, k);
-        cudaDeviceSynchronize();
+        kernel_L_col<<<blocks, threads>>>(d_A, d_L, d_U, n, k);
+        CUDA_CHECK(cudaGetLastError());
+        CUDA_CHECK(cudaDeviceSynchronize());
     }
 
     /* Kopiowanie GPU -> CPU */
-    cudaMemcpy(U, d_U, bytes, cudaMemcpyDeviceToHost);
-    cudaMemcpy(L, d_L, bytes, cudaMemcpyDeviceToHost);
+    CUDA_CHECK(cudaMemcpy(U, d_U, bytes, cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(L, d_L, bytes, cudaMemcpyDeviceToHost));
 
     /* Zwolnienie GPU */
-    cudaFree(d_A);
-    cudaFree(d_L);
-    cudaFree(d_U);
+    CUDA_CHECK(cudaFree(d_A));
+    CUDA_CHECK(cudaFree(d_L));
+    CUDA_CHECK(cudaFree(d_U));
 }
